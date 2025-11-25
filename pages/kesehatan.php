@@ -229,7 +229,7 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
         <nav class="navbar">
             <div class="container">
                 <div class="logo">
-                    <h1>🗺️ SIG Bandar Lampung</h1>
+                   <h1>SIG UAS</h1>
                 </div>
                 <ul class="nav-menu">
                     <li><a href="../index.php">Beranda</a></li>
@@ -244,7 +244,7 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
     <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <h2>🏥 Potensi Layanan Kesehatan</h2>
+            <h2>Potensi Layanan Kesehatan</h2>
             <p>Ekosistem 24 Rumah Sakit & Fasilitas Kesehatan</p>
         </div>
     </section>
@@ -254,28 +254,28 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">🏥</div>
+                    <div class="stat-icon"></div>
                     <h4>Total Rumah Sakit</h4>
                     <p class="stat-number"><?= $total_rs ?></p>
                     <span>fasilitas kesehatan</span>
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-icon">🏛️</div>
+                    <div class="stat-icon"></div>
                     <h4>RS Tipe A & B</h4>
                     <p class="stat-number">8</p>
                     <span>rumah sakit rujukan</span>
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-icon">⚕️</div>
+                    <div class="stat-icon"></div>
                     <h4>Tenaga Medis</h4>
                     <p class="stat-number">2,500+</p>
                     <span>dokter & perawat</span>
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-icon">🛏️</div>
+                    <div class="stat-icon"></div>
                     <h4>Kapasitas Tempat Tidur</h4>
                     <p class="stat-number">3,000+</p>
                     <span>bed capacity</span>
@@ -345,44 +345,44 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
     <section class="statistics">
         <div class="container">
             <div class="coe-section">
-                <h3>💎 Pengembangan Center of Excellence (COE)</h3>
+                <h3>Pengembangan Center of Excellence (COE)</h3>
                 <p style="margin-bottom:1rem;">
                     Strategi spesialisasi layanan kesehatan
                 </p>
 
                 <div class="coe-grid">
                     <div class="coe-card">
-                        <div class="coe-icon">❤️</div>
+                        <div class="coe-icon"></div>
                         <h4>Heart Center</h4>
                         <p>RS Abdul Moeloek sebagai pusat jantung.</p>
                     </div>
 
                     <div class="coe-card">
-                        <div class="coe-icon">🎗️</div>
+                        <div class="coe-icon"></div>
                         <h4>Oncology Center</h4>
                         <p>Unit Kanker - RS Advent & RS Urip.</p>
                     </div>
 
                     <div class="coe-card">
-                        <div class="coe-icon">🦴</div>
+                        <div class="coe-icon"></div>
                         <h4>Orthopaedic Center</h4>
                         <p>Bedah tulang dan rehabilitasi.</p>
                     </div>
 
                     <div class="coe-card">
-                        <div class="coe-icon">🧠</div>
+                        <div class="coe-icon"></div>
                         <h4>Neuroscience Center</h4>
                         <p>Layanan stroke 24/7.</p>
                     </div>
 
                     <div class="coe-card">
-                        <div class="coe-icon">👶</div>
+                        <div class="coe-icon"></div>
                         <h4>Women & Children Center</h4>
                         <p>NICU, PICU, dan layanan obstetri.</p>
                     </div>
 
                     <div class="coe-card">
-                        <div class="coe-icon">🫁</div>
+                        <div class="coe-icon"></div>
                         <h4>Pulmonary Center</h4>
                         <p>Pusat penyakit paru & pernafasan.</p>
                     </div>
@@ -395,29 +395,29 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
     <section class="statistics">
         <div class="container">
             <div class="network-diagram">
-                <h3>🔗 Jaringan Rujukan Kesehatan</h3>
+                <h3>Jaringan Rujukan Kesehatan</h3>
 
                 <div class="network-connections">
                     <div class="network-node">
-                        <div class="network-node-icon">🏘️</div>
+                        <div class="network-node-icon"></div>
                         <h4>Puskesmas</h4>
                         <p>Layanan Primer<br>30+ Puskesmas</p>
                     </div>
 
                     <div class="network-node">
-                        <div class="network-node-icon">🏥</div>
+                        <div class="network-node-icon"></div>
                         <h4>RS Tipe C/D</h4>
                         <p>Layanan Sekunder<br>16 RS</p>
                     </div>
 
                     <div class="network-node">
-                        <div class="network-node-icon">🏛️</div>
+                        <div class="network-node-icon"></div>
                         <h4>RS Tipe A/B</h4>
                         <p>Layanan Tersier<br>8 RS</p>
                     </div>
 
                     <div class="network-node">
-                        <div class="network-node-icon">✈️</div>
+                        <div class="network-node-icon"></div>
                         <h4>RS Nasional</h4>
                         <p>Super Spesialistik<br>Jakarta</p>
                     </div>
@@ -436,7 +436,7 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
                     <?php foreach ($kesehatan_data as $rs): ?>
                     <div class="hospital-card">
                         <div class="hospital-header">
-                            <div class="hospital-icon">🏥</div>
+                            <div class="hospital-icon"></div>
                             <div>
                                 <h4><?= htmlspecialchars($rs['nama']) ?></h4>
                                 <span class="hospital-type"><?= htmlspecialchars($rs['kategori']) ?></span>
@@ -444,10 +444,10 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
                         </div>
                         <div class="hospital-info">
                             <?php if ($rs['alamat']): ?>
-                            <p><span class="info-icon">📍</span> <?= htmlspecialchars($rs['alamat']) ?></p>
+                            <p><span class="info-icon"></span> <?= htmlspecialchars($rs['alamat']) ?></p>
                             <?php endif; ?>
                             <?php if ($rs['kecamatan_nama']): ?>
-                            <p><span class="info-icon">🏘️</span> Kec. <?= htmlspecialchars($rs['kecamatan_nama']) ?></p>
+                            <p><span class="info-icon"></span> Kec. <?= htmlspecialchars($rs['kecamatan_nama']) ?></p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -456,16 +456,16 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
                     <!-- Dummy Data Jika DB Kosong -->
                     <div class="hospital-card">
                         <div class="hospital-header">
-                            <div class="hospital-icon">🏥</div>
+                            <div class="hospital-icon"></div>
                             <div>
                                 <h4>RSUD Abdul Moeloek</h4>
                                 <span class="hospital-type">RS Tipe A</span>
                             </div>
                         </div>
                         <div class="hospital-info">
-                            <p><span class="info-icon">📍</span> Jl. Dr. Rivai No.6, Teluk Betung</p>
-                            <p><span class="info-icon">☎️</span> (0721) 703312</p>
-                            <p><span class="info-icon">🛏️</span> 500+ Bed | 24 Jam</p>
+                            <p><span class="info-icon"></span> Jl. Dr. Rivai No.6, Teluk Betung</p>
+                            <p><span class="info-icon"></span> (0721) 703312</p>
+                            <p><span class="info-icon"></span> 500+ Bed | 24 Jam</p>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -473,42 +473,113 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
         </div>
     </section>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    
     <script>
-    // Inisialisasi peta
-    var map = L.map('map').setView([-5.3971, 105.2668], 12);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-    }).addTo(map);
-
-    // Data marker dari PHP
-    var rumahSakit = <?= json_encode($kesehatan_data) ?>;
-
-    rumahSakit.forEach(function(rs) {
-        if (!rs.latitude || !rs.longitude) return;
-
-        var marker = L.marker([rs.latitude, rs.longitude]).addTo(map);
-        marker.bindPopup("<b>" + rs.nama + "</b><br>" + rs.alamat);
-
-        // 3 km buffer
-        L.circle([rs.latitude, rs.longitude], {
-            radius: 3000,
-            color: "#667eea",
-            fillColor: "#667eea",
-            fillOpacity: 0.3
+        // Initialize map
+        const map = L.map('map').setView([-5.3971, 105.2668], 12);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-
-        // 5 km buffer
-        L.circle([rs.latitude, rs.longitude], {
-            radius: 5000,
-            color: "#667eea",
-            fillColor: "#667eea",
-            fillOpacity: 0.15
-        }).addTo(map);
-    });
+        
+        // Hospital icon
+        const hospitalIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+            iconSize: [35, 35],
+            iconAnchor: [17, 17],
+            popupAnchor: [0, -17]
+        });
+        
+        // Load hospital data
+        fetch('../data/geojson/rumahsakit.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    pointToLayer: function(feature, latlng) {
+                        // Add buffer circles
+                        L.circle(latlng, {
+                            radius: 3000,
+                            color: '#667eea',
+                            fillColor: '#667eea',
+                            fillOpacity: 0.1,
+                            weight: 1
+                        }).addTo(map);
+                        
+                        L.circle(latlng, {
+                            radius: 5000,
+                            color: '#667eea',
+                            fillColor: '#667eea',
+                            fillOpacity: 0.05,
+                            weight: 1,
+                            dashArray: '5, 5'
+                        }).addTo(map);
+                        
+                        return L.marker(latlng, {icon: hospitalIcon});
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        layer.bindPopup(`
+                            <div style="min-width: 250px;">
+                                <h4 style="color: #667eea; margin-bottom: 0.8rem;">
+                                    🏥 ${props.nama || 'Rumah Sakit'}
+                                </h4>
+                                <p style="margin: 0.5rem 0;"><strong>Tipe:</strong> ${props.kategori || 'N/A'}</p>
+                                <p style="margin: 0.5rem 0;"><strong>Alamat:</strong> ${props.alamat || 'N/A'}</p>
+                                <p style="margin: 0.5rem 0; color: #667eea;">
+                                    <strong>Radius Pelayanan:</strong> 3-5 km
+                                </p>
+                            </div>
+                        `);
+                    }
+                }).addTo(map);
+            })
+            .catch(error => {
+                console.log('Hospital data not loaded, using dummy data');
+                createDummyHospitals();
+            });
+        
+        // Dummy hospital markers
+        function createDummyHospitals() {
+            const hospitals = [
+                {name: 'RSUD Abdul Moeloek', lat: -5.4278, lng: 105.2608, type: 'RS Tipe A'},
+                {name: 'RS Advent', lat: -5.4356, lng: 105.2751, type: 'RS Tipe B'},
+                {name: 'RS Urip Sumoharjo', lat: -5.4467, lng: 105.2759, type: 'RS TNI'},
+                {name: 'RS Immanuel', lat: -5.3971, lng: 105.2891, type: 'RS Tipe C'}
+            ];
+            
+            hospitals.forEach(h => {
+                // Buffer zones
+                L.circle([h.lat, h.lng], {
+                    radius: 3000,
+                    color: '#667eea',
+                    fillColor: '#667eea',
+                    fillOpacity: 0.1,
+                    weight: 1
+                }).addTo(map);
+                
+                L.circle([h.lat, h.lng], {
+                    radius: 5000,
+                    color: '#667eea',
+                    fillColor: '#667eea',
+                    fillOpacity: 0.05,
+                    weight: 1,
+                    dashArray: '5, 5'
+                }).addTo(map);
+                
+                // Marker
+                L.marker([h.lat, h.lng], {icon: hospitalIcon})
+                    .bindPopup(`
+                        <h4 style="color: #667eea;">🏥 ${h.name}</h4>
+                        <p><strong>Tipe:</strong> ${h.type}</p>
+                        <p style="color: #667eea;"><strong>Radius:</strong> 3-5 km</p>
+                    `)
+                    .addTo(map);
+            });
+        }
+        
+        // Add scale control
+        L.control.scale({imperial: false, metric: true}).addTo(map);
     </script>
 
 </body>

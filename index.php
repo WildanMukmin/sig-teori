@@ -19,7 +19,7 @@
         <nav class="navbar">
             <div class="container">
                 <div class="logo">
-                    <h1>SIG Bandar Lampung</h1>
+                    <h1>SIG UAS</h1>
                 </div>
                 <ul class="nav-menu">
                     <li><a href="index.php" class="active">Beranda</a></li>

@@ -143,7 +143,7 @@ $rata_rata_kepadatan = 5986;
         <nav class="navbar">
             <div class="container">
                 <div class="logo">
-                    <h1>SIG Bandar Lampung</h1>
+                    <h1>SIG UAS</h1>
                 </div>
                 <ul class="nav-menu">
                     <li><a href="../index.php">Beranda</a></li>
@@ -337,44 +337,11 @@ $rata_rata_kepadatan = 5986;
         </div>
     </footer>
 
-    <!-- Script -->
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        const map = L.map('map').setView([-5.3971, 105.2668], 12);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        fetch('../data/geojson/kecamatan.geojson')
-            .then(res => res.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    style: f => ({
-                        fillColor: getColor(f.properties.Kepadatan),
-                        weight: 2,
-                        opacity: 1,
-                        color: 'white',
-                        fillOpacity: 0.7
-                    }),
-                    onEachFeature: (f, layer) =>
-                        layer.bindPopup(`
-                            <h4>${f.properties.NAMOBJ}</h4>
-                            <p><strong>Kepadatan:</strong> ${f.properties.Kepadatan.toLocaleString('id-ID')} jiwa/km²</p>
-                        `)
-                }).addTo(map);
-            });
-
-        function getColor(d) {
-            return d > 15000 ? '#8B0000' :
-                d > 10000 ? '#FF4500' :
-                    d > 7000 ? '#FFA500' :
-                        d > 5000 ? '#FFD700' :
-                            d > 3000 ? '#90EE90' :
-                                '#006400';
-        }
-    </script>
+    
+    <!-- Custom JS -->
+    <script src="../assets/js/map.js"></script>
 
 </body>
 

@@ -142,9 +142,8 @@ fetch('data/geojson/pendidikan.geojson')
             },
             onEachFeature: function(feature, layer) {
                 layer.bindPopup(`
-                    <h4>🏫 ${feature.properties.NAMOBJ}</h4>
-                    <p><strong>Tipe:</strong> ${feature.properties.tipe || 'N/A'}</p>
-                    <p><strong>Alamat:</strong> ${feature.properties.alamat || 'N/A'}</p>
+                    <h4>${feature.properties.NAMOBJ}</h4>
+                    <p><strong>Tipe:</strong> ${feature.properties.REMARK || 'N/A'}</p>
                 `);
             }
         }).addTo(pendidikanLayer);
@@ -169,7 +168,7 @@ fetch('data/geojson/rumahsakit.geojson')
             onEachFeature: function(feature, layer) {
                 layer.bindPopup(`
                     <h4>🏥 ${feature.properties.NAMOBJ}</h4>
-                    <p><strong>Alamat:</strong> ${feature.properties.alamat || 'N/A'}</p>
+                    <p><strong>Alamat:</strong> ${feature.properties.REMARK || 'N/A'}</p>
                 `);
             }
         }).addTo(kesehatanLayer);
@@ -181,7 +180,7 @@ fetch('data/geojson/ibadah.geojson')
     .then(response => response.json())
     .then(data => {
         let mosqueIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/2679/2679683.png',
+            iconUrl: "https://cdn-icons-png.flaticon.com/128/3053/3053758.png",
             iconSize: [20, 20],
             iconAnchor: [10, 10],
             popupAnchor: [0, -10]
@@ -194,7 +193,7 @@ fetch('data/geojson/ibadah.geojson')
             onEachFeature: function(feature, layer) {
                 layer.bindPopup(`
                     <h4>🕌 ${feature.properties.NAMOBJ}</h4>
-                    <p><strong>Kategori:</strong> ${feature.properties.kategori || 'N/A'}</p>
+                    <p><strong>Kategori:</strong> ${feature.properties.REMARK || 'N/A'}</p>
                 `);
             }
         }).addTo(ibadahLayer);

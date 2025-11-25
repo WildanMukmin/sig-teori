@@ -173,7 +173,7 @@ $stats_kategori = fetchAll($sql_stats);
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <h1>SIG Bandar Lampung</h1>
+                <h1>SIG UAS</h1>
             </div>
             <ul class="nav-menu">
                 <li><a href="../index.php">Beranda</a></li>
@@ -389,32 +389,137 @@ $stats_kategori = fetchAll($sql_stats);
     </div>
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([-5.3971, 105.2668], 12);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Marker cluster group
+        const markers = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: true
+        });
+        
+        // Custom school icon
+        const schoolIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/3976/3976625.png',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -15]
+        });
+        
+        // Load education facilities
+        fetch('../data/geojson/pendidikan.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    pointToLayer: function(feature, latlng) {
+                        return L.marker(latlng, {icon: schoolIcon});
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        layer.bindPopup(`
+                            <div style="min-width: 200px;">
+                                <h4 style="color: #667eea; margin-bottom: 0.5rem;">
+                                    🏫 ${props.nama || 'N/A'}
+                                </h4>
+                                <p style="margin: 0.3rem 0;"><strong>Jenis:</strong> ${props.kategori || 'N/A'}</p>
+                                <p style="margin: 0.3rem 0;"><strong>Alamat:</strong> ${props.alamat || 'N/A'}</p>
+                            </div>
+                        `);
+                    }
+                }).addTo(markers);
+                
+                map.addLayer(markers);
+            })
+            .catch(error => {
+                console.log('Education data not loaded, using dummy data');
+                createDummyEducationMarkers();
+            });
+        
+        // Dummy data if GeoJSON not available
+        function createDummyEducationMarkers() {
+            const dummySchools = [
+                {name: 'SD Negeri 1 Tanjung Karang', lat: -5.4205, lng: 105.2668, type: 'SD'},
+                {name: 'SMP Negeri 2 Bandar Lampung', lat: -5.4189, lng: 105.2701, type: 'SMP'},
+                {name: 'SMA Negeri 1 Bandar Lampung', lat: -5.3893, lng: 105.2542, type: 'SMA'},
+                {name: 'SMK Negeri 3 Bandar Lampung', lat: -5.4123, lng: 105.2789, type: 'SMK'},
+                {name: 'Universitas Lampung', lat: -5.3586, lng: 105.2412, type: 'PT'}
+            ];
+            
+            dummySchools.forEach(school => {
+                L.marker([school.lat, school.lng], {icon: schoolIcon})
+                    .bindPopup(`<h4>🏫 ${school.name}</h4><p><strong>Jenis:</strong> ${school.type}</p>`)
+                    .addTo(markers);
+            });
+            
+            map.addLayer(markers);
+        }
+        
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const facilityCards = document.querySelectorAll('.facility-card');
+        const searchBox = document.getElementById('searchBox');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                
+                facilityCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.category.includes(filter)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Search functionality
+        if (searchBox) {
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                facilityCards.forEach(card => {
+                    const name = card.querySelector('h4').textContent.toLowerCase();
+                    if (name.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Animate chart bars on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.width = entry.target.dataset.width;
+                }
+            });
+        });
+        
+        document.querySelectorAll('.chart-bar').forEach(bar => {
+            bar.dataset.width = bar.style.width;
+            bar.style.width = '0';
+            observer.observe(bar);
+        });
+    </script>
 
-<script>
-    const map = L.map('map').setView([-5.3971, 105.2668], 12);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    const markers = L.markerClusterGroup({ maxClusterRadius: 50 });
-
-    const schoolIcon = L.icon({
-        iconUrl: 'https://cdn-icons-png.flaticon.com/512/3976/3976505.png',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30]
-    });
-
-    <?php foreach ($pendidikan_data as $sekolah): ?>
-    L.marker([<?= $sekolah['latitude'] ?>, <?= $sekolah['longitude'] ?>], { icon: schoolIcon })
-        .bindPopup("<b><?= addslashes($sekolah['nama']) ?></b><br><?= addslashes($sekolah['alamat']) ?>")
-        .addTo(markers);
-    <?php endforeach; ?>
-
-    map.addLayer(markers);
-</script>
 
 </body>
 </html>
