@@ -1,17 +1,33 @@
 <?php
-// pages/kesehatan.php - Halaman Analisis Potensi Kesehatan
-require_once '../config/database.php';
+// ===============================================
+// LOAD DATA GEOJSON FASILITAS KESEHATAN
+// ===============================================
 
-// Ambil data fasilitas kesehatan dari database
-$sql = "SELECT f.*, k.nama as kecamatan_nama 
-        FROM fasilitas f 
-        LEFT JOIN kecamatan k ON f.kecamatan_id = k.id 
-        WHERE f.tipe = 'kesehatan' 
-        ORDER BY f.nama";
-$kesehatan_data = fetchAll($sql);
+$geojson_path = __DIR__ . '/../data/geojson/rumahsakit.geojson';
 
-// Hitung total rumah sakit
-$total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
+if (!file_exists($geojson_path)) {
+    die("GeoJSON fasilitas kesehatan tidak ditemukan: $geojson_path");
+}
+
+$geojson_data = json_decode(file_get_contents($geojson_path), true);
+$features = $geojson_data['features'] ?? [];
+
+$kesehatan_data = [];
+
+foreach ($features as $f) {
+    $props = $f['properties'];
+
+    $kesehatan_data[] = [
+        'nama'     => $props['NAMOBJ'] ?? 'Tidak diketahui',
+        'kategori' => $props['REMARK'] ?? 'Tidak diketahui',
+        'alamat'   => $props['ALAMAT'] ?? 'Alamat Belum Ditemukan',
+        'geometry' => $f['geometry'] ?? "Belum Ada Koordinat",
+    ];
+}
+
+// Total RS berdasarkan data asli
+$total_rs = count($kesehatan_data);
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -24,7 +40,7 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
 
     <style>
         .hospital-grid {
@@ -284,30 +300,39 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
         </div>
     </section>
 
-    <!-- Map -->
-    <section class="map-section">
-        <div class="container">
-            <h3>Peta Sebaran Rumah Sakit & Buffer Zone</h3>
-            <p style="color:#666;margin-bottom:1rem;">
-                Lingkaran menunjukkan radius pelayanan 3–5 km per rumah sakit
-            </p>
-
-            <div id="map" class="accessibility-map"></div>
-
-            <div class="buffer-legend">
-                <h4 style="margin-bottom: 0.8rem; font-size: 0.95rem;">Radius Pelayanan</h4>
-                <div class="buffer-item">
-                    <div class="buffer-color" style="background: rgba(102, 126, 234, 0.3);"></div>
-                    <span>3 km - Akses Mudah</span>
+        <!-- Map Container -->
+        <section class="map-section">
+            <div class="container">
+                <div class="map-controls">
+                    <h3>Peta Interaktif Bandar Lampung</h3>
+                    <div class="layer-controls">
+                        <label>
+                            <input type="checkbox" id="layer-kecamatan"> 
+                            Batas Kecamatan
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-pendidikan"> 
+                            Fasilitas Pendidikan (362)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-kesehatan" checked> 
+                            Rumah Sakit (24)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-ibadah"> 
+                            Sarana Ibadah (1340)
+                        </label>
+                    </div>
                 </div>
-                <div class="buffer-item">
-                    <div class="buffer-color" style="background: rgba(102, 126, 234, 0.15);"></div>
-                    <span>5 km - Jangkauan Normal</span>
+
+                <div id="map"></div>
+
+                <div id="info-panel" class="info-panel">
+                    <h4>Informasi Kecamatan</h4>
+                    <p>Klik pada peta untuk melihat detail</p>
                 </div>
             </div>
-        </div>
-    </section>
-
+        </section>
     <!-- Coverage -->
     <section class="statistics">
         <div class="container">
@@ -444,143 +469,20 @@ $total_rs = count($kesehatan_data) > 0 ? count($kesehatan_data) : 24;
                         </div>
                         <div class="hospital-info">
                             <?php if ($rs['alamat']): ?>
-                            <p><span class="info-icon"></span> <?= htmlspecialchars($rs['alamat']) ?></p>
-                            <?php endif; ?>
-                            <?php if ($rs['kecamatan_nama']): ?>
-                            <p><span class="info-icon"></span> Kec. <?= htmlspecialchars($rs['kecamatan_nama']) ?></p>
+                            <p><span class="info-icon"></span> <?= htmlspecialchars($rs['alamat']) ?? "Belum Ada Alamat" ?></p>
                             <?php endif; ?>
                         </div>
                     </div>
                     <?php endforeach; ?>
-                <?php else: ?>
-                    <!-- Dummy Data Jika DB Kosong -->
-                    <div class="hospital-card">
-                        <div class="hospital-header">
-                            <div class="hospital-icon"></div>
-                            <div>
-                                <h4>RSUD Abdul Moeloek</h4>
-                                <span class="hospital-type">RS Tipe A</span>
-                            </div>
-                        </div>
-                        <div class="hospital-info">
-                            <p><span class="info-icon"></span> Jl. Dr. Rivai No.6, Teluk Betung</p>
-                            <p><span class="info-icon"></span> (0721) 703312</p>
-                            <p><span class="info-icon"></span> 500+ Bed | 24 Jam</p>
-                        </div>
-                    </div>
                 <?php endif; ?>
             </div>
         </div>
     </section>
 
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <script>
-        // Initialize map
-        const map = L.map('map').setView([-5.3971, 105.2668], 12);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        // Hospital icon
-        const hospitalIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-            iconSize: [35, 35],
-            iconAnchor: [17, 17],
-            popupAnchor: [0, -17]
-        });
-        
-        // Load hospital data
-        fetch('../data/geojson/rumahsakit.geojson')
-            .then(response => response.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    pointToLayer: function(feature, latlng) {
-                        // Add buffer circles
-                        L.circle(latlng, {
-                            radius: 3000,
-                            color: '#667eea',
-                            fillColor: '#667eea',
-                            fillOpacity: 0.1,
-                            weight: 1
-                        }).addTo(map);
-                        
-                        L.circle(latlng, {
-                            radius: 5000,
-                            color: '#667eea',
-                            fillColor: '#667eea',
-                            fillOpacity: 0.05,
-                            weight: 1,
-                            dashArray: '5, 5'
-                        }).addTo(map);
-                        
-                        return L.marker(latlng, {icon: hospitalIcon});
-                    },
-                    onEachFeature: function(feature, layer) {
-                        const props = feature.properties;
-                        layer.bindPopup(`
-                            <div style="min-width: 250px;">
-                                <h4 style="color: #667eea; margin-bottom: 0.8rem;">
-                                    🏥 ${props.nama || 'Rumah Sakit'}
-                                </h4>
-                                <p style="margin: 0.5rem 0;"><strong>Tipe:</strong> ${props.kategori || 'N/A'}</p>
-                                <p style="margin: 0.5rem 0;"><strong>Alamat:</strong> ${props.alamat || 'N/A'}</p>
-                                <p style="margin: 0.5rem 0; color: #667eea;">
-                                    <strong>Radius Pelayanan:</strong> 3-5 km
-                                </p>
-                            </div>
-                        `);
-                    }
-                }).addTo(map);
-            })
-            .catch(error => {
-                console.log('Hospital data not loaded, using dummy data');
-                createDummyHospitals();
-            });
-        
-        // Dummy hospital markers
-        function createDummyHospitals() {
-            const hospitals = [
-                {name: 'RSUD Abdul Moeloek', lat: -5.4278, lng: 105.2608, type: 'RS Tipe A'},
-                {name: 'RS Advent', lat: -5.4356, lng: 105.2751, type: 'RS Tipe B'},
-                {name: 'RS Urip Sumoharjo', lat: -5.4467, lng: 105.2759, type: 'RS TNI'},
-                {name: 'RS Immanuel', lat: -5.3971, lng: 105.2891, type: 'RS Tipe C'}
-            ];
-            
-            hospitals.forEach(h => {
-                // Buffer zones
-                L.circle([h.lat, h.lng], {
-                    radius: 3000,
-                    color: '#667eea',
-                    fillColor: '#667eea',
-                    fillOpacity: 0.1,
-                    weight: 1
-                }).addTo(map);
-                
-                L.circle([h.lat, h.lng], {
-                    radius: 5000,
-                    color: '#667eea',
-                    fillColor: '#667eea',
-                    fillOpacity: 0.05,
-                    weight: 1,
-                    dashArray: '5, 5'
-                }).addTo(map);
-                
-                // Marker
-                L.marker([h.lat, h.lng], {icon: hospitalIcon})
-                    .bindPopup(`
-                        <h4 style="color: #667eea;">🏥 ${h.name}</h4>
-                        <p><strong>Tipe:</strong> ${h.type}</p>
-                        <p style="color: #667eea;"><strong>Radius:</strong> 3-5 km</p>
-                    `)
-                    .addTo(map);
-            });
-        }
-        
-        // Add scale control
-        L.control.scale({imperial: false, metric: true}).addTo(map);
-    </script>
-
+    <!-- Custom JS -->
+    <script src="/assets/js/map.js"></script>
 </body>
 </html>

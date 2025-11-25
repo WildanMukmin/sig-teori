@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
     <!-- Header -->
@@ -157,11 +157,13 @@
             <p>Jurusan Ilmu Komputer - Universitas Lampung</p>
         </div>
     </footer>
-
+    
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- Custom JS -->
-    <script src="assets/js/map.js"></script>
+    <script src="/assets/js/map.js">
+
+    </script>
 </body>
 </html>

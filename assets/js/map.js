@@ -7,11 +7,30 @@ const DEFAULT_ZOOM = 12;
 // Inisialisasi peta
 let map = L.map('map').setView(BANDAR_LAMPUNG_CENTER, DEFAULT_ZOOM);
 
+// Ambil nama file halaman sekarang
+const currentPage = window.location.pathname.split('/').pop();
+
 // Layer groups untuk kontrol
-let kecamatanLayer = L.layerGroup().addTo(map);
+let kecamatanLayer = L.layerGroup();
 let pendidikanLayer = L.layerGroup();
 let kesehatanLayer = L.layerGroup();
 let ibadahLayer = L.layerGroup();
+
+// Mapping halaman ke layer yang ingin aktif
+const pageLayerMap = {
+    "index.php": kecamatanLayer,
+    "kepadatan.php": kecamatanLayer,
+    "pendidikan.php": pendidikanLayer,
+    "kesehatan.php": kesehatanLayer,
+    "ibadah.php": ibadahLayer
+};
+
+// Jalankan
+const activeLayer = pageLayerMap[currentPage];
+
+if (activeLayer) {
+    activeLayer.addTo(map);
+}
 
 // Tambahkan tile layer (basemap)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -33,11 +52,11 @@ function getColor(density) {
 function style(feature) {
     return {
         fillColor: getColor(feature.properties.Kepadatan),
-        weight: 2,
+        weight: 1,
         opacity: 1,
         color: 'white',
         dashArray: '3',
-        fillOpacity: 0.7
+        fillOpacity: 0.6
     };
 }
 
@@ -47,10 +66,10 @@ function highlightFeature(e) {
     console.log(layer)
     
     layer.setStyle({
-        weight: 5,
-        color: '#666',
-        dashArray: '',
-        fillOpacity: 0.9
+        weight: 2,
+        color: '#000000ff',
+        dashArray: '2',
+        fillOpacity: 0.7
     });
     
     layer.bringToFront();
@@ -61,7 +80,8 @@ function highlightFeature(e) {
 
 // Fungsi reset highlight
 function resetHighlight(e) {
-    kecamatanLayer.resetStyle(e.target);
+    let layer = e.target;
+    kecamatanLayer.resetStyle(layer);
     document.getElementById('info-panel').innerHTML = 
         '<h4>Informasi Kecamatan</h4><p>Klik pada peta untuk melihat detail</p>';
 }
@@ -110,7 +130,7 @@ function onEachFeature(feature, layer) {
 }
 
 // Load data GeoJSON Kecamatan
-fetch('data/geojson/kecamatan.geojson')
+fetch('/data/geojson/kecamatan.geojson')
     .then(response => response.json())
     .then(data => {
         L.geoJSON(data, {
@@ -126,7 +146,7 @@ fetch('data/geojson/kecamatan.geojson')
 
 
 // Load Fasilitas Pendidikan
-fetch('data/geojson/pendidikan.geojson')
+fetch('/data/geojson/pendidikan.geojson')
     .then(response => response.json())
     .then(data => {
         let schoolIcon = L.icon({
@@ -151,7 +171,7 @@ fetch('data/geojson/pendidikan.geojson')
     .catch(error => console.log('Pendidikan data not loaded'));
 
 // Load Rumah Sakit
-fetch('data/geojson/rumahsakit.geojson')
+fetch('/data/geojson/rumahsakit.geojson')
     .then(response => response.json())
     .then(data => {
         let hospitalIcon = L.icon({
@@ -162,9 +182,27 @@ fetch('data/geojson/rumahsakit.geojson')
         });
         
         L.geoJSON(data, {
-            pointToLayer: function(feature, latlng) {
-                return L.marker(latlng, {icon: hospitalIcon});
-            },
+                    pointToLayer: function(feature, latlng) {
+                        // Add buffer circles
+                        L.circle(latlng, {
+                            radius: 3000,
+                            color: '#667eea',
+                            fillColor: '#667eea',
+                            fillOpacity: 0.1,
+                            weight: 1
+                        }).addTo(kesehatanLayer);
+                        
+                        L.circle(latlng, {
+                            radius: 5000,
+                            color: '#667eea',
+                            fillColor: '#667eea',
+                            fillOpacity: 0.05,
+                            weight: 1,
+                            dashArray: '5, 5'
+                        }).addTo(kesehatanLayer);
+                        
+                        return L.marker(latlng, {icon: hospitalIcon});
+                    },
             onEachFeature: function(feature, layer) {
                 layer.bindPopup(`
                     <h4>🏥 ${feature.properties.NAMOBJ}</h4>
@@ -176,7 +214,7 @@ fetch('data/geojson/rumahsakit.geojson')
     .catch(error => console.log('Hospital data not loaded'));
 
 // Load Sarana Ibadah
-fetch('data/geojson/ibadah.geojson')
+fetch('/data/geojson/ibadah.geojson')
     .then(response => response.json())
     .then(data => {
         let mosqueIcon = L.icon({

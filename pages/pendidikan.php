@@ -1,21 +1,101 @@
 <?php
-// pages/pendidikan.php - Halaman Analisis Potensi Pendidikan
-require_once '../config/database.php';
+// ===============================================
+// LOAD DATA GEOJSON FASILITAS PENDIDIKAN
+// ===============================================
 
-// Ambil data fasilitas pendidikan dari database
-$sql = "SELECT f.*, k.nama as kecamatan_nama 
-        FROM fasilitas f 
-        LEFT JOIN kecamatan k ON f.kecamatan_id = k.id 
-        WHERE f.tipe = 'pendidikan' 
-        ORDER BY f.nama";
-$pendidikan_data = fetchAll($sql);
+$geojson_path = __DIR__ . '/../data/geojson/pendidikan.geojson';
 
-// Hitung statistik per kategori
-$sql_stats = "SELECT kategori, COUNT(*) as jumlah 
-              FROM fasilitas 
-              WHERE tipe = 'pendidikan' 
-              GROUP BY kategori";
-$stats_kategori = fetchAll($sql_stats);
+if (!file_exists($geojson_path)) {
+    die("GeoJSON fasilitas pendidikan tidak ditemukan: $geojson_path");
+}
+
+$geojson_data = json_decode(file_get_contents($geojson_path), true);
+$features = $geojson_data['features'] ?? [];
+
+// Parsing ke array agar mudah dipakai
+$pendidikan_data = [];
+
+$kategori_counter = [];
+
+foreach ($features as $f) {
+    $props = $f['properties'];
+
+    $nama = $props['NAMOBJ'] ?? "Tidak diketahui";
+    $kategori = $props['REMARK'] ?? "Lainnya";
+    $alamat = "-"; // GeoJSON pendidikan kamu tidak memiliki alamat
+    $kecamatan = "-"; // Tidak ada field kecamatan, jadi dikosongkan
+
+    // Hitung statistik kategori
+    if (!isset($kategori_counter[$kategori])) {
+        $kategori_counter[$kategori] = 0;
+    }
+    $kategori_counter[$kategori]++;
+
+    // Tambah data ke array final
+    $pendidikan_data[] = [
+        'nama'     => $nama,
+        'kategori' => $kategori,
+        'alamat'   => $alamat,
+        'kecamatan_nama' => $kecamatan,
+        'geometry' => $f['geometry'] ?? null
+    ];
+}
+$jenjang_counter = [
+    'TK/PAUD' => 0,
+    'SD/MI' => 0,
+    'SMP/MTs' => 0,
+    'SMA/SMK/MA' => 0,
+    'Perguruan Tinggi' => 0,
+];
+
+// Tentukan jenjang berdasar kategori
+function classifyJenjang($kategori) {
+    $kategori = strtoupper($kategori);
+
+    if (str_contains($kategori, 'TK') || str_contains($kategori, 'PAUD'))
+        return 'TK/PAUD';
+
+    if (str_contains($kategori, 'SD') || str_contains($kategori, 'MI'))
+        return 'SD/MI';
+
+    if (str_contains($kategori, 'SMP') || str_contains($kategori, 'MTS'))
+        return 'SMP/MTs';
+
+    if (str_contains($kategori, 'SMA') || str_contains($kategori, 'SMK') || str_contains($kategori, 'MA'))
+        return 'SMA/SMK/MA';
+
+    if (
+        str_contains($kategori, 'UNIV') || 
+        str_contains($kategori, 'INSTITUT') || 
+        str_contains($kategori, 'POLI') || 
+        str_contains($kategori, 'SEKOLAH TINGGI')
+    )
+        return 'Perguruan Tinggi';
+
+    return 'Lainnya';
+}
+
+$jenjang = classifyJenjang($kategori);
+if (!isset($jenjang_counter[$jenjang])) {
+    $jenjang_counter[$jenjang] = 0;
+}
+$jenjang_counter[$jenjang]++;
+
+$total_fasilitas = count($pendidikan_data);
+
+$distribusi_jenjang = [];
+foreach ($jenjang_counter as $jenjang => $jumlah) {
+    if ($jumlah > 0) {
+        $persentase = round(($jumlah / $total_fasilitas) * 100, 2);
+        $distribusi_jenjang[] = [
+            'jenjang' => $jenjang,
+            'jumlah' => $jumlah,
+            'persen' => $persentase
+        ];
+    }
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -139,7 +219,7 @@ $stats_kategori = fetchAll($sql_stats);
             display: flex;
             align-items: center;
             padding: 0 15px;
-            color: white;
+            color: black;
             font-weight: 600;
             transition: width 0.8s ease;
         }
@@ -221,12 +301,40 @@ $stats_kategori = fetchAll($sql_stats);
     </div>
 </section>
 
-<section class="map-section">
-    <div class="container">
-        <h3>Peta Persebaran Fasilitas Pendidikan</h3>
-        <div id="map"></div>
-    </div>
-</section>
+        <!-- Map Container -->
+        <section class="map-section">
+            <div class="container">
+                <div class="map-controls">
+                    <h3>Peta Interaktif Bandar Lampung</h3>
+                    <div class="layer-controls">
+                        <label>
+                            <input type="checkbox" id="layer-kecamatan"> 
+                            Batas Kecamatan
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-pendidikan" checked> 
+                            Fasilitas Pendidikan (362)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-kesehatan"> 
+                            Rumah Sakit (24)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-ibadah"> 
+                            Sarana Ibadah (1340)
+                        </label>
+                    </div>
+                </div>
+
+                <div id="map"></div>
+
+                <div id="info-panel" class="info-panel">
+                    <h4>Informasi Kecamatan</h4>
+                    <p>Klik pada peta untuk melihat detail</p>
+                </div>
+            </div>
+        </section>
+
 
 <section class="statistics">
     <div class="container">
@@ -262,43 +370,32 @@ $stats_kategori = fetchAll($sql_stats);
     <div class="container">
         <h3>Distribusi Jenjang Pendidikan</h3>
 
+        <?php 
+        // Hitung total
+        $total = array_sum($kategori_counter);
+
+        // Loop setiap kategori secara dinamis
+        foreach ($kategori_counter as $kategori => $jumlah):
+            // Hitung persentase
+            $persen = ($jumlah / $total) * 100;
+            $rounded = round($persen, 1) + 10;
+        ?>
+        
         <div class="chart-item">
-            <div class="chart-label">TK/PAUD</div>
+            <div class="chart-label"><?= htmlspecialchars($kategori) ?></div>
             <div class="chart-bar-container">
-                <div class="chart-bar" style="width:25%;">90 unit (25%)</div>
+                <div class="chart-bar" style="width: <?= $rounded ?>%;">
+                    <?= $jumlah ?> unit (<?= $rounded ?>%)
+                </div>
             </div>
         </div>
 
-        <div class="chart-item">
-            <div class="chart-label">SD/MI</div>
-            <div class="chart-bar-container">
-                <div class="chart-bar" style="width:30%;">110 unit (30%)</div>
-            </div>
-        </div>
-
-        <div class="chart-item">
-            <div class="chart-label">SMP/MTs</div>
-            <div class="chart-bar-container">
-                <div class="chart-bar" style="width:20%;">72 unit (20%)</div>
-            </div>
-        </div>
-
-        <div class="chart-item">
-            <div class="chart-label">SMA/SMK/MA</div>
-            <div class="chart-bar-container">
-                <div class="chart-bar" style="width:22%;">78 unit (22%)</div>
-            </div>
-        </div>
-
-        <div class="chart-item">
-            <div class="chart-label">Perguruan Tinggi</div>
-            <div class="chart-bar-container">
-                <div class="chart-bar" style="width:3%;">12 unit (3%)</div>
-            </div>
-        </div>
-
+        <?php endforeach; ?>
+        
     </div>
 </section>
+
+
 
 <section class="statistics">
     <div class="container">
@@ -348,14 +445,6 @@ $stats_kategori = fetchAll($sql_stats);
         
         <div class="filter-section">
             <input type="text" class="search-box" id="searchBox" placeholder="Cari nama sekolah...">
-            <div class="filter-buttons" style="margin-top:1rem;">
-                <button class="filter-btn active" data-filter="all">Semua</button>
-                <button class="filter-btn" data-filter="SD">SD/MI</button>
-                <button class="filter-btn" data-filter="SMP">SMP/MTs</button>
-                <button class="filter-btn" data-filter="SMA">SMA/MA</button>
-                <button class="filter-btn" data-filter="SMK">SMK</button>
-                <button class="filter-btn" data-filter="Perguruan Tinggi">Perguruan Tinggi</button>
-            </div>
         </div>
 
         <div class="facility-grid" id="facilityGrid">
@@ -394,99 +483,15 @@ $stats_kategori = fetchAll($sql_stats);
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     
     <!-- Custom JS -->
+         <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="/assets/js/map.js"></script>
     <script>
-        // Initialize map
-        const map = L.map('map').setView([-5.3971, 105.2668], 12);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        // Marker cluster group
-        const markers = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            spiderfyOnMaxZoom: true,
-            showCoverageOnHover: true
-        });
-        
-        // Custom school icon
-        const schoolIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/3976/3976625.png',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-            popupAnchor: [0, -15]
-        });
-        
-        // Load education facilities
-        fetch('../data/geojson/pendidikan.geojson')
-            .then(response => response.json())
-            .then(data => {
-                L.geoJSON(data, {
-                    pointToLayer: function(feature, latlng) {
-                        return L.marker(latlng, {icon: schoolIcon});
-                    },
-                    onEachFeature: function(feature, layer) {
-                        const props = feature.properties;
-                        layer.bindPopup(`
-                            <div style="min-width: 200px;">
-                                <h4 style="color: #667eea; margin-bottom: 0.5rem;">
-                                    🏫 ${props.nama || 'N/A'}
-                                </h4>
-                                <p style="margin: 0.3rem 0;"><strong>Jenis:</strong> ${props.kategori || 'N/A'}</p>
-                                <p style="margin: 0.3rem 0;"><strong>Alamat:</strong> ${props.alamat || 'N/A'}</p>
-                            </div>
-                        `);
-                    }
-                }).addTo(markers);
-                
-                map.addLayer(markers);
-            })
-            .catch(error => {
-                console.log('Education data not loaded, using dummy data');
-                createDummyEducationMarkers();
-            });
-        
-        // Dummy data if GeoJSON not available
-        function createDummyEducationMarkers() {
-            const dummySchools = [
-                {name: 'SD Negeri 1 Tanjung Karang', lat: -5.4205, lng: 105.2668, type: 'SD'},
-                {name: 'SMP Negeri 2 Bandar Lampung', lat: -5.4189, lng: 105.2701, type: 'SMP'},
-                {name: 'SMA Negeri 1 Bandar Lampung', lat: -5.3893, lng: 105.2542, type: 'SMA'},
-                {name: 'SMK Negeri 3 Bandar Lampung', lat: -5.4123, lng: 105.2789, type: 'SMK'},
-                {name: 'Universitas Lampung', lat: -5.3586, lng: 105.2412, type: 'PT'}
-            ];
-            
-            dummySchools.forEach(school => {
-                L.marker([school.lat, school.lng], {icon: schoolIcon})
-                    .bindPopup(`<h4>🏫 ${school.name}</h4><p><strong>Jenis:</strong> ${school.type}</p>`)
-                    .addTo(markers);
-            });
-            
-            map.addLayer(markers);
-        }
-        
         // Filter functionality
-        const filterBtns = document.querySelectorAll('.filter-btn');
         const facilityCards = document.querySelectorAll('.facility-card');
         const searchBox = document.getElementById('searchBox');
-        
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Remove active class from all buttons
-                filterBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                const filter = this.dataset.filter;
-                
-                facilityCards.forEach(card => {
-                    if (filter === 'all' || card.dataset.category.includes(filter)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-        });
         
         // Search functionality
         if (searchBox) {

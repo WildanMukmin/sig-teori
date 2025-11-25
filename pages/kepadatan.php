@@ -1,14 +1,45 @@
 <?php
-// pages/kepadatan.php - Halaman Analisis Kepadatan Penduduk
-require_once '../config/database.php';
+// =============================================================
+// LOAD DATA GEOJSON
+// =============================================================
+$geojson_path = __DIR__ . '/../data/geojson/kecamatan.geojson';
 
-// Ambil data kepadatan dari database
-$sql = "SELECT * FROM kecamatan ORDER BY kepadatan DESC";
-$kecamatan_data = fetchAll($sql);
+if (!file_exists($geojson_path)) {
+    die("GeoJSON tidak ditemukan: $geojson_path");
+}
 
-// Hitung statistik
+$geojson_data = json_decode(file_get_contents($geojson_path), true);
+
+// Ambil fitur
+$features = $geojson_data['features'] ?? [];
+
+// Buat array kecamatan seperti format lama
+$kecamatan_data = [];
+
+foreach ($features as $f) {
+    $props = $f['properties'];
+
+    $kecamatan_data[] = [
+        'nama'      => $props['Kecamatan'] ?? $props['NAMOBJ'] ?? 'Tidak diketahui',
+        'kepadatan' => $props['Kepadatan'] ?? 0,
+    ];
+}
+
+// =============================================================
+// SORT kecamatan dari kepadatan tertinggi → terendah
+// =============================================================
+usort($kecamatan_data, function ($a, $b) {
+    return $b['kepadatan'] <=> $a['kepadatan'];
+});
+
+// =============================================================
+// Perhitungan statistik
+// =============================================================
 $total_kecamatan = count($kecamatan_data);
-$rata_rata_kepadatan = 5986;
+
+$total_kepadatan = array_sum(array_column($kecamatan_data, 'kepadatan'));
+$rata_rata_kepadatan = ($total_kecamatan > 0) ? $total_kepadatan / $total_kecamatan : 0;
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -22,7 +53,7 @@ $rata_rata_kepadatan = 5986;
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
 
     <style>
         .data-table {
@@ -194,7 +225,7 @@ $rata_rata_kepadatan = 5986;
                     <div class="stat-card">
                         <span class="stat-icon icon-yellow"></span>
                         <h4>Wilayah Berpotensi</h4>
-                        <p class="stat-number">4</p>
+                        <p class="stat-number">11</p>
                         <span>kecamatan</span>
                     </div>
 
@@ -239,7 +270,6 @@ $rata_rata_kepadatan = 5986;
                             <th>Kecamatan</th>
                             <th>Kepadatan</th>
                             <th>Kategori</th>
-                            <th>Rasio JK</th>
                         </tr>
                     </thead>
 
@@ -266,7 +296,6 @@ $rata_rata_kepadatan = 5986;
                                 <td><strong><?= $kec['nama'] ?></strong></td>
                                 <td><?= number_format($kec['kepadatan'], 0, ',', '.') ?></td>
                                 <td><span class="density-badge <?= $badge_class ?>"><?= $kategori ?></span></td>
-                                <td><?= $kec['rasio_jk'] ? number_format($kec['rasio_jk'], 1) : '-' ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -319,11 +348,37 @@ $rata_rata_kepadatan = 5986;
             </div>
         </section>
 
-        <!-- Peta -->
+        <!-- Map Container -->
         <section class="map-section">
             <div class="container">
-                <h3>Peta Kepadatan Penduduk</h3>
+                <div class="map-controls">
+                    <h3>Peta Interaktif Bandar Lampung</h3>
+                    <div class="layer-controls">
+                        <label>
+                            <input type="checkbox" id="layer-kecamatan" checked> 
+                            Batas Kecamatan
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-pendidikan"> 
+                            Fasilitas Pendidikan (362)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-kesehatan"> 
+                            Rumah Sakit (24)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="layer-ibadah"> 
+                            Sarana Ibadah (1340)
+                        </label>
+                    </div>
+                </div>
+
                 <div id="map"></div>
+
+                <div id="info-panel" class="info-panel">
+                    <h4>Informasi Kecamatan</h4>
+                    <p>Klik pada peta untuk melihat detail</p>
+                </div>
             </div>
         </section>
 
@@ -341,7 +396,7 @@ $rata_rata_kepadatan = 5986;
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- Custom JS -->
-    <script src="../assets/js/map.js"></script>
+    <script src="/assets/js/map.js"></script>
 
 </body>
 
