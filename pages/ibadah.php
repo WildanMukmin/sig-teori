@@ -53,7 +53,7 @@ arsort($kategori_counter);
 </head>
 
 <body class="bg-gray-50">
-    <header class="bg-white shadow-md sticky top-0 z-50">
+    <header class="bg-white shadow-md sticky top-0 z-[1000]">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
 
